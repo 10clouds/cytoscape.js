@@ -182,9 +182,45 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.fill();
 }
 
+
+function doubleBadge(context, label, bg, textX, textY, radius) {
+  var textWidth = context.measureText(label[0]).width;
+  var margin = 2;
+  textWidth += margin;
+  context.fillStyle = 'white';
+  context.beginPath();
+
+  context.arc(textX - textWidth, textY, bg.bgHeight / 2, 0.5 * Math.PI, 1.5 * Math.PI);
+  context.lineTo(textX, bg.bgY);
+  context.lineTo(textX, bg.bgY + bg.bgHeight);
+  context.lineTo(textX - textWidth, bg.bgY + bg.bgHeight);
+
+  context.closePath();
+  context.fill();
+  context.fillStyle = '#CCC';
+  context.fillText(label[0], textX - textWidth / 2 - margin, textY + 1);
+
+  textWidth = context.measureText(label[1]).width + margin;
+  textWidth += margin;
+  context.fillStyle = 'red';
+  context.beginPath();
+
+  context.arc(textX + textWidth, textY, bg.bgHeight / 2, 1.5 * Math.PI, 0.5 * Math.PI);
+  context.moveTo(textX, bg.bgY);
+  context.lineTo(textX + textWidth, bg.bgY);
+  context.lineTo(textX + textWidth, bg.bgY + bg.bgHeight);
+  context.lineTo(textX, bg.bgY + bg.bgHeight);
+
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'white';
+  context.fillText(label[1], textX + textWidth / 2 + margin, textY + 1);
+}
+
 // Draw text
 CRp.drawText = function(context, element, textX, textY) {
   var _p = element._private;
+  var label = element.data().label;
   var style = _p.style;
   var rstyle = _p.rstyle;
   var rscratch = _p.rscratch;
@@ -279,7 +315,14 @@ CRp.drawText = function(context, element, textX, textY) {
         context.fillStyle = 'rgba(' + textBackgroundColor[0] + ',' + textBackgroundColor[1] + ',' + textBackgroundColor[2] + ',' + backgroundOpacity * parentOpacity + ')';
         var styleShape = style['text-background-shape'].strValue;
         if (styleShape == 'roundrectangle') {
-          roundRect(context, bgX, bgY, bgWidth, bgHeight, 2);
+
+          if (Array.isArray(label)) {
+            var bg = {bgX: bgX, bgY: bgY, bgWidth: bgWidth, bgHeight: bgHeight};
+            doubleBadge(context, label, bg, textX, textY, 12);
+            return;
+          }
+
+          roundRect(context, bgX, bgY, bgWidth, bgHeight, 12);
         } else {
           context.fillRect(bgX,bgY,bgWidth,bgHeight);
         }

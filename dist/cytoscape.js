@@ -13906,12 +13906,14 @@ BRp.load = function() {
     r.hoverData.which = e.which;
 
     var cy = r.cy;
-    var pos = r.projectIntoViewport(e.clientX, e.clientY);
+    var gpos = [ e.clientX, e.clientY ];
+    var pos = r.projectIntoViewport( gpos[0], gpos[1] );
     var select = r.selection;
     var near = r.findNearestElement(pos[0], pos[1], true, false);
     var draggedElements = r.dragData.possibleDragElements;
 
     r.hoverData.mdownPos = pos;
+    r.hoverData.mdownGPos = gpos;
 
     var checkForTaphold = function(){
       r.hoverData.tapholdCancelled = false;
@@ -14080,7 +14082,10 @@ BRp.load = function() {
 
     var cy = r.cy;
     var zoom = cy.zoom();
-    var pos = r.projectIntoViewport(e.clientX, e.clientY);
+    var gpos = [ e.clientX, e.clientY ];
+    var pos = r.projectIntoViewport( gpos[0], gpos[1] );
+    var mdownPos = r.hoverData.mdownPos;
+    var mdownGPos = r.hoverData.mdownGPos;
     var select = r.selection;
 
     var near = null;
@@ -14094,16 +14099,19 @@ BRp.load = function() {
 
     var draggedElements = r.dragData.possibleDragElements;
 
-    var dx = select[2] - select[0];
-    var dx2 = dx * dx;
-    var dy = select[3] - select[1];
-    var dy2 = dy * dy;
-    var dist2 = dx2 + dy2;
-    var rdist2 = dist2 * zoom * zoom;
+    var isOverThresholdDrag;
+
+    if( mdownGPos ){
+      var dx = gpos[0] - mdownGPos[0];
+      var dx2 = dx * dx;
+      var dy = gpos[1] - mdownGPos[1];
+      var dy2 = dy * dy;
+      var dist2 = dx2 + dy2;
+
+      isOverThresholdDrag = dist2 >= r.desktopTapThreshold2;
+    }
 
     var multSelKeyDown = isMultSelKeyDown( e );
-
-    var isOverThresholdDrag = rdist2 >= r.desktopTapThreshold2;
 
     if (isOverThresholdDrag) {
       r.hoverData.tapholdCancelled = true;
@@ -14497,6 +14505,8 @@ BRp.load = function() {
     r.dragData.didDrag = false;
     r.hoverData.dragged = false;
     r.hoverData.dragDelta = [];
+    r.hoverData.mdownPos = null;
+    r.hoverData.mdownGPos = null;
 
   }, false);
 
@@ -14610,7 +14620,6 @@ BRp.load = function() {
     if (e.touches[0]) { var pos = r.projectIntoViewport(e.touches[0].clientX, e.touches[0].clientY); now[0] = pos[0]; now[1] = pos[1]; }
     if (e.touches[1]) { var pos = r.projectIntoViewport(e.touches[1].clientX, e.touches[1].clientY); now[2] = pos[0]; now[3] = pos[1]; }
     if (e.touches[2]) { var pos = r.projectIntoViewport(e.touches[2].clientX, e.touches[2].clientY); now[4] = pos[0]; now[5] = pos[1]; }
-
 
     // record starting points for pinch-to-zoom
     if( e.touches[1] ){
@@ -14760,10 +14769,13 @@ BRp.load = function() {
       // Tap, taphold
       // -----
 
+      r.touchData.startPosition = [];
       for (var i=0; i<now.length; i++) {
         earlier[i] = now[i];
         r.touchData.startPosition[i] = now[i];
       }
+
+      r.touchData.startGPosition = [ e.touches[0].clientX, e.touches[0].clientY ];
 
       r.touchData.singleTouchMoved = false;
       r.touchData.singleTouchStartTime = +new Date();
@@ -14791,27 +14803,30 @@ BRp.load = function() {
 
   var touchmoveHandler;
   r.registerBinding(window, 'touchmove', touchmoveHandler = function(e) {
-
     var select = r.selection;
     var capture = r.touchData.capture;
     var cy = r.cy;
-    var now = r.touchData.now; var earlier = r.touchData.earlier;
+    var now = r.touchData.now;
+    var earlier = r.touchData.earlier;
     var zoom = cy.zoom();
 
     if (e.touches[0]) { var pos = r.projectIntoViewport(e.touches[0].clientX, e.touches[0].clientY); now[0] = pos[0]; now[1] = pos[1]; }
     if (e.touches[1]) { var pos = r.projectIntoViewport(e.touches[1].clientX, e.touches[1].clientY); now[2] = pos[0]; now[3] = pos[1]; }
     if (e.touches[2]) { var pos = r.projectIntoViewport(e.touches[2].clientX, e.touches[2].clientY); now[4] = pos[0]; now[5] = pos[1]; }
 
-    var disp = []; for (var j=0;j<now.length;j++) { disp[j] = now[j] - earlier[j]; }
-    var startPos = r.touchData.startPosition;
-    var dx = now[0] - startPos[0];
-    var dx2 = dx * dx;
-    var dy = now[1] - startPos[1];
-    var dy2 = dy * dy;
-    var dist2 = dx2 + dy2;
-    var rdist2 = dist2 * zoom * zoom;
+    var isOverThresholdDrag;
 
-    var isOverThresholdDrag = rdist2 >= r.touchTapThreshold2;
+    if( capture && e.touches[0] ){
+      var disp = []; for (var j=0;j<now.length;j++) { disp[j] = now[j] - earlier[j]; }
+      var startGPos = r.touchData.startGPosition;
+      var dx = e.touches[0].clientX - startGPos[0];
+      var dx2 = dx * dx;
+      var dy = e.touches[0].clientY - startGPos[1];
+      var dy2 = dy * dy;
+      var dist2 = dx2 + dy2;
+
+      isOverThresholdDrag = dist2 >= r.touchTapThreshold2;
+    }
 
     // context swipe cancelling
     if( capture && r.touchData.cxt ){
@@ -15385,6 +15400,8 @@ BRp.load = function() {
 
     if( e.touches.length === 0 ){
       r.touchData.dragDelta = [];
+      r.touchData.startPosition = null;
+      r.touchData.startGPosition = null;
     }
 
     if( updateStartStyle && start ){
@@ -16523,9 +16540,45 @@ function roundRect(ctx, x, y, width, height, radius) {
   ctx.fill();
 }
 
+
+function doubleBadge(context, label, bg, textX, textY, radius) {
+  var textWidth = context.measureText(label[0]).width;
+  var margin = 2;
+  textWidth += margin;
+  context.fillStyle = 'white';
+  context.beginPath();
+
+  context.arc(textX - textWidth, textY, bg.bgHeight / 2, 0.5 * Math.PI, 1.5 * Math.PI);
+  context.lineTo(textX, bg.bgY);
+  context.lineTo(textX, bg.bgY + bg.bgHeight);
+  context.lineTo(textX - textWidth, bg.bgY + bg.bgHeight);
+
+  context.closePath();
+  context.fill();
+  context.fillStyle = '#CCC';
+  context.fillText(label[0], textX - textWidth / 2 - margin, textY + 1);
+
+  textWidth = context.measureText(label[1]).width + margin;
+  textWidth += margin;
+  context.fillStyle = 'red';
+  context.beginPath();
+
+  context.arc(textX + textWidth, textY, bg.bgHeight / 2, 1.5 * Math.PI, 0.5 * Math.PI);
+  context.moveTo(textX, bg.bgY);
+  context.lineTo(textX + textWidth, bg.bgY);
+  context.lineTo(textX + textWidth, bg.bgY + bg.bgHeight);
+  context.lineTo(textX, bg.bgY + bg.bgHeight);
+
+  context.closePath();
+  context.fill();
+  context.fillStyle = 'white';
+  context.fillText(label[1], textX + textWidth / 2 + margin, textY + 1);
+}
+
 // Draw text
 CRp.drawText = function(context, element, textX, textY) {
   var _p = element._private;
+  var label = element.data().label;
   var style = _p.style;
   var rstyle = _p.rstyle;
   var rscratch = _p.rscratch;
@@ -16620,7 +16673,14 @@ CRp.drawText = function(context, element, textX, textY) {
         context.fillStyle = 'rgba(' + textBackgroundColor[0] + ',' + textBackgroundColor[1] + ',' + textBackgroundColor[2] + ',' + backgroundOpacity * parentOpacity + ')';
         var styleShape = style['text-background-shape'].strValue;
         if (styleShape == 'roundrectangle') {
-          roundRect(context, bgX, bgY, bgWidth, bgHeight, 2);
+
+          if (Array.isArray(label)) {
+            var bg = {bgX: bgX, bgY: bgY, bgWidth: bgWidth, bgHeight: bgHeight};
+            doubleBadge(context, label, bg, textX, textY, 12);
+            return;
+          }
+
+          roundRect(context, bgX, bgY, bgWidth, bgHeight, 12);
         } else {
           context.fillRect(bgX,bgY,bgWidth,bgHeight);
         }
@@ -17507,7 +17567,26 @@ CRp.render = function( options ) {
 
 
   function drawElements( list, context ){
-    var eles = list.eles;
+    //------- WESCOUT ------
+    var eles = []; //list.eles;
+    var edges = [];
+    var nodes = [];
+    var rings = [];
+    var elem = null;
+
+    for (var k = 0; k < list.eles.length; k++) {
+      elem = list.eles[k];
+      if (ele.isEdge()) {
+        edges.push(ele);
+      } else if (ele.data().hasOwnProperty('ring')) {
+        rings.push(ele);
+      } else {
+        nodes.push(ele);
+      }
+    }
+    eles = rings.concat(rings, edges, nodes);
+    //------- END WESCOUT ------
+
 
     for( var i = 0; i < eles.length; i++ ){
       var ele = eles[i];
@@ -18853,7 +18932,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = '2.6.8';
+cytoscape.version = 'snapshot-19970b140e-1461158121192';
 
 // try to register w/ jquery
 if( window && window.jQuery ){

@@ -458,7 +458,26 @@ CRp.render = function( options ) {
 
 
   function drawElements( list, context ){
-    var eles = list.eles;
+    //------- WESCOUT ------
+    var eles = []; //list.eles;
+    var edges = [];
+    var nodes = [];
+    var rings = [];
+    var elem = null;
+
+    for (var k = 0; k < list.eles.length; k++) {
+      elem = list.eles[k];
+      if (ele.isEdge()) {
+        edges.push(ele);
+      } else if (ele.data().hasOwnProperty('ring')) {
+        rings.push(ele);
+      } else {
+        nodes.push(ele);
+      }
+    }
+    eles = rings.concat(rings, edges, nodes);
+    //------- END WESCOUT ------
+
 
     for( var i = 0; i < eles.length; i++ ){
       var ele = eles[i];
