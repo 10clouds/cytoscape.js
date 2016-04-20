@@ -467,12 +467,12 @@ CRp.render = function( options ) {
 
     for (var k = 0; k < list.eles.length; k++) {
       elem = list.eles[k];
-      if (ele.isEdge()) {
-        edges.push(ele);
-      } else if (ele.data().hasOwnProperty('ring')) {
-        rings.push(ele);
+      if (elem.isEdge()) {
+        edges.push(elem);
+      } else if (elem.data().hasOwnProperty('ring')) {
+        rings.push(elem);
       } else {
-        nodes.push(ele);
+        nodes.push(elem);
       }
     }
     eles = rings.concat(rings, edges, nodes);
