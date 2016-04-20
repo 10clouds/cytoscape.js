@@ -17576,12 +17576,12 @@ CRp.render = function( options ) {
 
     for (var k = 0; k < list.eles.length; k++) {
       elem = list.eles[k];
-      if (ele.isEdge()) {
-        edges.push(ele);
-      } else if (ele.data().hasOwnProperty('ring')) {
-        rings.push(ele);
+      if (elem.isEdge()) {
+        edges.push(elem);
+      } else if (elem.data().hasOwnProperty('ring')) {
+        rings.push(elem);
       } else {
-        nodes.push(ele);
+        nodes.push(elem);
       }
     }
     eles = rings.concat(rings, edges, nodes);
@@ -18932,7 +18932,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-19970b140e-1461158121192';
+cytoscape.version = 'snapshot-9a057f884e-1461160501592';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
