@@ -16629,7 +16629,7 @@ CRp.drawText = function(context, element, textX, textY) {
         }
       }
 
-      var bgWidth = rstyle.labelWidth;
+      var bgWidth = rstyle.labelWidth + 6;
       var bgHeight = rstyle.labelHeight;
       var bgX = textX;
 
@@ -18932,7 +18932,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-9a057f884e-1461160501592';
+cytoscape.version = 'snapshot-cee28c7011-1461160940848';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
