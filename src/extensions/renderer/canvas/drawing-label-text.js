@@ -271,7 +271,7 @@ CRp.drawText = function(context, element, textX, textY) {
         }
       }
 
-      var bgWidth = rstyle.labelWidth;
+      var bgWidth = rstyle.labelWidth + 6;
       var bgHeight = rstyle.labelHeight;
       var bgX = textX;
 
