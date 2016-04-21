@@ -184,7 +184,7 @@ function roundRect(ctx, x, y, width, height, radius) {
 
 
 function doubleBadge(context, element, label, bg, textX, textY, radius) {
-  var style = element.data().badgeStyle;
+  var style = element.data().badgeStyle || {};
   var textWidth = context.measureText(label[0]).width;
   var margin = 2;
   textWidth += margin;

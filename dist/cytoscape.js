@@ -16541,11 +16541,12 @@ function roundRect(ctx, x, y, width, height, radius) {
 }
 
 
-function doubleBadge(context, label, bg, textX, textY, radius) {
+function doubleBadge(context, element, label, bg, textX, textY, radius) {
+  var style = element.data().badgeStyle || {};
   var textWidth = context.measureText(label[0]).width;
   var margin = 2;
   textWidth += margin;
-  context.fillStyle = 'white';
+  context.fillStyle = style.leftBackground || '#FFFFFF';
   context.beginPath();
 
   context.arc(textX - textWidth, textY, bg.bgHeight / 2, 0.5 * Math.PI, 1.5 * Math.PI);
@@ -16555,12 +16556,12 @@ function doubleBadge(context, label, bg, textX, textY, radius) {
 
   context.closePath();
   context.fill();
-  context.fillStyle = '#CCC';
+  context.fillStyle = style.leftColor || '#B1B1B1';
   context.fillText(label[0], textX - textWidth / 2 - margin, textY + 1);
 
   textWidth = context.measureText(label[1]).width + margin;
   textWidth += margin;
-  context.fillStyle = 'red';
+  context.fillStyle = style.rightBackground || '#F03232';
   context.beginPath();
 
   context.arc(textX + textWidth, textY, bg.bgHeight / 2, 1.5 * Math.PI, 0.5 * Math.PI);
@@ -16571,7 +16572,7 @@ function doubleBadge(context, label, bg, textX, textY, radius) {
 
   context.closePath();
   context.fill();
-  context.fillStyle = 'white';
+  context.fillStyle = style.rightColor || '#FFFFFF';
   context.fillText(label[1], textX + textWidth / 2 + margin, textY + 1);
 }
 
@@ -16676,7 +16677,7 @@ CRp.drawText = function(context, element, textX, textY) {
 
           if (Array.isArray(label)) {
             var bg = {bgX: bgX, bgY: bgY, bgWidth: bgWidth, bgHeight: bgHeight};
-            doubleBadge(context, label, bg, textX, textY, 12);
+            doubleBadge(context, element, label, bg, textX, textY, 12);
             return;
           }
 
@@ -18932,7 +18933,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-cee28c7011-1461160940848';
+cytoscape.version = 'snapshot-ab1003ba5e-1461232938467';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
