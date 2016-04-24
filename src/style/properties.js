@@ -48,7 +48,7 @@ var styfn = {};
     textDecoration: { enums: ['none', 'underline', 'overline', 'line-through'] },
     textTransform: { enums: ['none', 'uppercase', 'lowercase'] },
     textWrap: { enums: ['none', 'wrap'] },
-    textBackgroundShape: { enums: ['rectangle', 'roundrectangle']},
+    textBackgroundShape: { enums: ['pill', 'rectangle', 'roundrectangle']},
     nodeShape: { enums: ['rectangle', 'roundrectangle', 'ellipse', 'triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'diamond', 'vee', 'rhomboid', 'polygon'] },
     compoundIncludeLabels: { enums: ['include', 'exclude'] },
     arrowShape: { enums: ['tee', 'triangle', 'triangle-tee', 'triangle-backcurve', 'half-triangle-overshot', 'vee', 'square', 'circle', 'diamond', 'none'] },
@@ -211,7 +211,16 @@ var styfn = {};
     { name: 'active-bg-opacity', type: t.zeroOneNumber },
     { name: 'active-bg-size', type: t.size },
     { name: 'outside-texture-bg-color', type: t.color },
-    { name: 'outside-texture-bg-opacity', type: t.zeroOneNumber }
+    { name: 'outside-texture-bg-opacity', type: t.zeroOneNumber },
+
+    // WESCOUT
+    { name: 'label-height-modifier', type: t.number },
+    { name: 'label-width-modifier', type: t.number },
+
+    { name: 'left-badge-color', type: t.color },
+    { name: 'left-badge-background', type: t.color },
+    { name: 'right-badge-color', type: t.color },
+    { name: 'right-badge-background', type: t.color },
   ];
 
   // define aliases
@@ -356,7 +365,16 @@ styfn.addDefaultStylesheet = function(){
         'padding-left': 0,
         'padding-right': 0,
         'position': 'origin',
-        'compound-sizing-wrt-labels': 'include'
+        'compound-sizing-wrt-labels': 'include',
+
+        // WESCOUT props
+        'label-height-modifier': 0,
+        'label-width-modifier': 0,
+
+        'left-badge-color': '#B1B1B1',
+        'left-badge-background': '#FFFFFF',
+        'right-badge-color': '#FFFFFF',
+        'right-badge-background': '#F03232',
       }, {
         // node pie bg
         'pie-size': '100%'
