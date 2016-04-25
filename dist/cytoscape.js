@@ -16541,39 +16541,57 @@ function roundRect(ctx, x, y, width, height, radius) {
 }
 
 
-function doubleBadge(context, element, label, bg, textX, textY, radius) {
-  var style = element.data().badgeStyle || {};
-  var textWidth = context.measureText(label[0]).width;
+function doubleBadge(ctx, style, label, bg, textX, textY, radius) {
+  var opacity = style.opacity.value;
+  var leftBackgroundText = style['left-badge-background'].value;
+  var leftColorText = style['left-badge-color'].value;
+  var rightBackgroundText = style['right-badge-background'].value;
+  var rightColorText = style['right-badge-color'].value;
+
+  var textWidth = ctx.measureText(label[0]).width;
   var margin = 2;
   textWidth += margin;
-  context.fillStyle = style.leftBackground || '#FFFFFF';
-  context.beginPath();
+  ctx.fillStyle = 'rgba(' + leftBackgroundText[0] + ',' + leftBackgroundText[1] + ',' + leftBackgroundText[2] + ',' + opacity + ')';
+  ctx.beginPath();
+  ctx.arc(textX - textWidth, textY, bg.bgHeight / 2, 0.5 * Math.PI, 1.5 * Math.PI);
+  ctx.lineTo(textX, bg.bgY);
+  ctx.lineTo(textX, bg.bgY + bg.bgHeight);
+  ctx.lineTo(textX - textWidth, bg.bgY + bg.bgHeight);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(' + leftColorText[0] + ',' + leftColorText[1] + ',' + leftColorText[2] + ',' + opacity + ')';
+  ctx.fillText(label[0], textX - textWidth / 2 - margin, textY + 1);
 
-  context.arc(textX - textWidth, textY, bg.bgHeight / 2, 0.5 * Math.PI, 1.5 * Math.PI);
-  context.lineTo(textX, bg.bgY);
-  context.lineTo(textX, bg.bgY + bg.bgHeight);
-  context.lineTo(textX - textWidth, bg.bgY + bg.bgHeight);
-
-  context.closePath();
-  context.fill();
-  context.fillStyle = style.leftColor || '#B1B1B1';
-  context.fillText(label[0], textX - textWidth / 2 - margin, textY + 1);
-
-  textWidth = context.measureText(label[1]).width + margin;
+  textWidth = ctx.measureText(label[1]).width + margin;
   textWidth += margin;
-  context.fillStyle = style.rightBackground || '#F03232';
-  context.beginPath();
+  ctx.fillStyle = 'rgba(' + rightBackgroundText[0] + ',' + rightBackgroundText[1] + ',' + rightBackgroundText[2] + ',' + opacity + ')';
+  ctx.beginPath();
+  ctx.arc(textX + textWidth, textY, bg.bgHeight / 2, 1.5 * Math.PI, 0.5 * Math.PI);
+  ctx.moveTo(textX, bg.bgY);
+  ctx.lineTo(textX + textWidth, bg.bgY);
+  ctx.lineTo(textX + textWidth, bg.bgY + bg.bgHeight);
+  ctx.lineTo(textX, bg.bgY + bg.bgHeight);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = 'rgba(' + rightColorText[0] + ',' + rightColorText[1] + ',' + rightColorText[2] + ',' + opacity + ')';
+  ctx.fillText(label[1], textX + textWidth / 2 + margin, textY + 1);
+}
 
-  context.arc(textX + textWidth, textY, bg.bgHeight / 2, 1.5 * Math.PI, 0.5 * Math.PI);
-  context.moveTo(textX, bg.bgY);
-  context.lineTo(textX + textWidth, bg.bgY);
-  context.lineTo(textX + textWidth, bg.bgY + bg.bgHeight);
-  context.lineTo(textX, bg.bgY + bg.bgHeight);
+function drawPill(ctx, x, y, width, height) {
+  var radius = radius || 5;
+  var x_p = x + height / 2;
+  var width_p = width - height;
 
-  context.closePath();
-  context.fill();
-  context.fillStyle = style.rightColor || '#FFFFFF';
-  context.fillText(label[1], textX + textWidth / 2 + margin, textY + 1);
+  ctx.beginPath();
+  ctx.arc(x_p, y + height / 2, height / 2, 0.5 * Math.PI, 1.5 * Math.PI);
+  ctx.moveTo(x_p , y);
+  ctx.lineTo(x_p + width_p, y);
+  ctx.lineTo(x_p + width_p, y + height );
+  ctx.lineTo(x_p, y + height);
+  ctx.moveTo(x_p + width_p, y + height / 2);
+  ctx.arc(x_p + width_p,  y + height / 2, height / 2, 1.5 * Math.PI, 0.5 * Math.PI);
+  ctx.closePath();
+  ctx.fill();
 }
 
 // Draw text
@@ -16630,8 +16648,12 @@ CRp.drawText = function(context, element, textX, textY) {
         }
       }
 
-      var bgWidth = rstyle.labelWidth + 6;
-      var bgHeight = rstyle.labelHeight;
+      var widthModifier = style['label-width-modifier'].pfValue;
+      var heightModifier = style['label-height-modifier'].pfValue;
+
+      var bgWidth = rstyle.labelWidth + widthModifier;
+      var bgHeight = rstyle.labelHeight + heightModifier;
+
       var bgX = textX;
 
       if (halign) {
@@ -16673,15 +16695,16 @@ CRp.drawText = function(context, element, textX, textY) {
 
         context.fillStyle = 'rgba(' + textBackgroundColor[0] + ',' + textBackgroundColor[1] + ',' + textBackgroundColor[2] + ',' + backgroundOpacity * parentOpacity + ')';
         var styleShape = style['text-background-shape'].strValue;
-        if (styleShape == 'roundrectangle') {
 
+        if (styleShape == 'pill') {
           if (Array.isArray(label)) {
             var bg = {bgX: bgX, bgY: bgY, bgWidth: bgWidth, bgHeight: bgHeight};
-            doubleBadge(context, element, label, bg, textX, textY, 12);
+            doubleBadge(context, style, label, bg, textX, textY);
             return;
           }
-
-          roundRect(context, bgX, bgY, bgWidth, bgHeight, 12);
+          drawPill(context, bgX, bgY, bgWidth, bgHeight);
+        } else if (styleShape == 'roundrectangle') {
+          roundRect(context, bgX, bgY, bgWidth, bgHeight, 11);
         } else {
           context.fillRect(bgX,bgY,bgWidth,bgHeight);
         }
@@ -18933,7 +18956,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-ab1003ba5e-1461232938467';
+cytoscape.version = 'snapshot-6ced83328e-1461586252853';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
@@ -22807,7 +22830,7 @@ var styfn = {};
     textDecoration: { enums: ['none', 'underline', 'overline', 'line-through'] },
     textTransform: { enums: ['none', 'uppercase', 'lowercase'] },
     textWrap: { enums: ['none', 'wrap'] },
-    textBackgroundShape: { enums: ['rectangle', 'roundrectangle']},
+    textBackgroundShape: { enums: ['pill', 'rectangle', 'roundrectangle']},
     nodeShape: { enums: ['rectangle', 'roundrectangle', 'ellipse', 'triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'diamond', 'vee', 'rhomboid', 'polygon'] },
     compoundIncludeLabels: { enums: ['include', 'exclude'] },
     arrowShape: { enums: ['tee', 'triangle', 'triangle-tee', 'triangle-backcurve', 'half-triangle-overshot', 'vee', 'square', 'circle', 'diamond', 'none'] },
@@ -22970,7 +22993,16 @@ var styfn = {};
     { name: 'active-bg-opacity', type: t.zeroOneNumber },
     { name: 'active-bg-size', type: t.size },
     { name: 'outside-texture-bg-color', type: t.color },
-    { name: 'outside-texture-bg-opacity', type: t.zeroOneNumber }
+    { name: 'outside-texture-bg-opacity', type: t.zeroOneNumber },
+
+    // WESCOUT
+    { name: 'label-height-modifier', type: t.number },
+    { name: 'label-width-modifier', type: t.number },
+
+    { name: 'left-badge-color', type: t.color },
+    { name: 'left-badge-background', type: t.color },
+    { name: 'right-badge-color', type: t.color },
+    { name: 'right-badge-background', type: t.color },
   ];
 
   // define aliases
@@ -23115,7 +23147,16 @@ styfn.addDefaultStylesheet = function(){
         'padding-left': 0,
         'padding-right': 0,
         'position': 'origin',
-        'compound-sizing-wrt-labels': 'include'
+        'compound-sizing-wrt-labels': 'include',
+
+        // WESCOUT props
+        'label-height-modifier': 0,
+        'label-width-modifier': 0,
+
+        'left-badge-color': '#B1B1B1',
+        'left-badge-background': '#FFFFFF',
+        'right-badge-color': '#FFFFFF',
+        'right-badge-background': '#F03232',
       }, {
         // node pie bg
         'pie-size': '100%'
