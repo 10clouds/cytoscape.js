@@ -200,12 +200,12 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     // Border width, draw border
     if (borderWidth > 0) {
       if (borderStyle === 'progress') {
-        drawArcs(initialDrawingPoint, fullCircleLength, context, false);
+        drawProgress(false);
       }
       else if( usePaths ) {
         context.stroke( path );
         if (borderHovered === 'yes') {
-          drawArcs(initialDrawingPoint, fullCircleLength, context, true);
+          drawProgress(true);
         }
       } else {
         context.stroke();
@@ -253,12 +253,14 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
       context.fill();
     }
   }
-  function drawArcs(initialDrawingPoint, fullCircleLength, context, isHover) {
+
+  function drawProgress(isHover) {
     var radius = (isHover) ? 2.62 : 2;
+
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
 
-    context.lineWidth = (isHover) ? 9 : 3;
+    context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
     var hoveredPath = new Path2D();
     hoveredPath.arc(0,0,nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
