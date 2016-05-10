@@ -16878,6 +16878,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var bgColor = style['background-color'].value;
     var borderColor = style['border-color'].value;
     var borderStyle = style['border-style'].value;
+    var borderHovered = (style['border-hovered']) ? style['border-hovered'].value : 'no';
+    var initialDrawingPoint = 1.5;
+    var fullCircleLength = 2;
 
     this.fillStyle(context, bgColor[0], bgColor[1], bgColor[2], style['background-opacity'].value * parentOpacity);
 
@@ -16949,7 +16952,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
     context = canvasContext;
 
-    if( usePaths ){
+    if ( usePaths ) {
       context.fill( path );
     } else {
       context.fill();
@@ -17004,9 +17007,14 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
     // Border width, draw border
     if (borderWidth > 0) {
-
-      if( usePaths ){
+      if (borderStyle === 'progress') {
+        drawProgress(false);
+      }
+      else if( usePaths ) {
         context.stroke( path );
+        if (borderHovered === 'yes') {
+          drawProgress(true);
+        }
       } else {
         context.stroke();
       }
@@ -17055,6 +17063,26 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     }
   }
 
+  function drawProgress(isHover) {
+    var radius = (isHover) ? 2.62 : 2;
+
+    var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
+    var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
+
+    context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
+
+    var hoveredPath = new Path2D();
+    hoveredPath.arc(0,0,nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
+    context.strokeStyle = 'red';
+    context.stroke(hoveredPath);
+
+    if (borderProgress < 1) {
+      var hoveredPath2 = new Path2D();
+      hoveredPath2.arc(0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI);
+      context.strokeStyle = 'white';
+      context.stroke(hoveredPath2);
+    }
+  }
 };
 
 // does the node have at least one pie piece?
@@ -18956,7 +18984,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-6ced83328e-1461586252853';
+cytoscape.version = 'snapshot-1066afbff6-1462892878602';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
@@ -22821,7 +22849,7 @@ var styfn = {};
     color: { color: true },
     bool: { enums: ['yes', 'no'] },
     lineStyle: { enums: ['solid', 'dotted', 'dashed'] },
-    borderStyle: { enums: ['solid', 'dotted', 'dashed', 'double'] },
+    borderStyle: { enums: ['solid', 'dotted', 'dashed', 'double', 'progress'] },
     curveStyle: { enums: ['bezier', 'unbundled-bezier', 'haystack', 'segments'] },
     fontFamily: { regex: '^([\\w- \\"]+(?:\\s*,\\s*[\\w- \\"]+)*)$' },
     fontVariant: { enums: ['small-caps', 'normal'] },
@@ -22957,6 +22985,10 @@ var styfn = {};
     { name: 'border-opacity', type: t.zeroOneNumber },
     { name: 'border-width', type: t.size },
     { name: 'border-style', type: t.borderStyle },
+    { name: 'border-progress', type: t.zeroOneNumber },
+    { name: 'border-progress-color', type: t.color },
+    { name: 'border-progress-background', type: t.color },
+    { name: 'border-hovered', type: t.bool },
 
     // node background images
     { name: 'background-image', type: t.url },
