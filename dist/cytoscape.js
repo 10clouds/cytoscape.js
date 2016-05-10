@@ -13906,12 +13906,14 @@ BRp.load = function() {
     r.hoverData.which = e.which;
 
     var cy = r.cy;
-    var pos = r.projectIntoViewport(e.clientX, e.clientY);
+    var gpos = [ e.clientX, e.clientY ];
+    var pos = r.projectIntoViewport( gpos[0], gpos[1] );
     var select = r.selection;
     var near = r.findNearestElement(pos[0], pos[1], true, false);
     var draggedElements = r.dragData.possibleDragElements;
 
     r.hoverData.mdownPos = pos;
+    r.hoverData.mdownGPos = gpos;
 
     var checkForTaphold = function(){
       r.hoverData.tapholdCancelled = false;
@@ -14080,7 +14082,10 @@ BRp.load = function() {
 
     var cy = r.cy;
     var zoom = cy.zoom();
-    var pos = r.projectIntoViewport(e.clientX, e.clientY);
+    var gpos = [ e.clientX, e.clientY ];
+    var pos = r.projectIntoViewport( gpos[0], gpos[1] );
+    var mdownPos = r.hoverData.mdownPos;
+    var mdownGPos = r.hoverData.mdownGPos;
     var select = r.selection;
 
     var near = null;
@@ -14094,16 +14099,19 @@ BRp.load = function() {
 
     var draggedElements = r.dragData.possibleDragElements;
 
-    var dx = select[2] - select[0];
-    var dx2 = dx * dx;
-    var dy = select[3] - select[1];
-    var dy2 = dy * dy;
-    var dist2 = dx2 + dy2;
-    var rdist2 = dist2 * zoom * zoom;
+    var isOverThresholdDrag;
+
+    if( mdownGPos ){
+      var dx = gpos[0] - mdownGPos[0];
+      var dx2 = dx * dx;
+      var dy = gpos[1] - mdownGPos[1];
+      var dy2 = dy * dy;
+      var dist2 = dx2 + dy2;
+
+      isOverThresholdDrag = dist2 >= r.desktopTapThreshold2;
+    }
 
     var multSelKeyDown = isMultSelKeyDown( e );
-
-    var isOverThresholdDrag = rdist2 >= r.desktopTapThreshold2;
 
     if (isOverThresholdDrag) {
       r.hoverData.tapholdCancelled = true;
@@ -14497,6 +14505,8 @@ BRp.load = function() {
     r.dragData.didDrag = false;
     r.hoverData.dragged = false;
     r.hoverData.dragDelta = [];
+    r.hoverData.mdownPos = null;
+    r.hoverData.mdownGPos = null;
 
   }, false);
 
@@ -14610,7 +14620,6 @@ BRp.load = function() {
     if (e.touches[0]) { var pos = r.projectIntoViewport(e.touches[0].clientX, e.touches[0].clientY); now[0] = pos[0]; now[1] = pos[1]; }
     if (e.touches[1]) { var pos = r.projectIntoViewport(e.touches[1].clientX, e.touches[1].clientY); now[2] = pos[0]; now[3] = pos[1]; }
     if (e.touches[2]) { var pos = r.projectIntoViewport(e.touches[2].clientX, e.touches[2].clientY); now[4] = pos[0]; now[5] = pos[1]; }
-
 
     // record starting points for pinch-to-zoom
     if( e.touches[1] ){
@@ -14760,10 +14769,13 @@ BRp.load = function() {
       // Tap, taphold
       // -----
 
+      r.touchData.startPosition = [];
       for (var i=0; i<now.length; i++) {
         earlier[i] = now[i];
         r.touchData.startPosition[i] = now[i];
       }
+
+      r.touchData.startGPosition = [ e.touches[0].clientX, e.touches[0].clientY ];
 
       r.touchData.singleTouchMoved = false;
       r.touchData.singleTouchStartTime = +new Date();
@@ -14791,27 +14803,30 @@ BRp.load = function() {
 
   var touchmoveHandler;
   r.registerBinding(window, 'touchmove', touchmoveHandler = function(e) {
-
     var select = r.selection;
     var capture = r.touchData.capture;
     var cy = r.cy;
-    var now = r.touchData.now; var earlier = r.touchData.earlier;
+    var now = r.touchData.now;
+    var earlier = r.touchData.earlier;
     var zoom = cy.zoom();
 
     if (e.touches[0]) { var pos = r.projectIntoViewport(e.touches[0].clientX, e.touches[0].clientY); now[0] = pos[0]; now[1] = pos[1]; }
     if (e.touches[1]) { var pos = r.projectIntoViewport(e.touches[1].clientX, e.touches[1].clientY); now[2] = pos[0]; now[3] = pos[1]; }
     if (e.touches[2]) { var pos = r.projectIntoViewport(e.touches[2].clientX, e.touches[2].clientY); now[4] = pos[0]; now[5] = pos[1]; }
 
-    var disp = []; for (var j=0;j<now.length;j++) { disp[j] = now[j] - earlier[j]; }
-    var startPos = r.touchData.startPosition;
-    var dx = now[0] - startPos[0];
-    var dx2 = dx * dx;
-    var dy = now[1] - startPos[1];
-    var dy2 = dy * dy;
-    var dist2 = dx2 + dy2;
-    var rdist2 = dist2 * zoom * zoom;
+    var isOverThresholdDrag;
 
-    var isOverThresholdDrag = rdist2 >= r.touchTapThreshold2;
+    if( capture && e.touches[0] ){
+      var disp = []; for (var j=0;j<now.length;j++) { disp[j] = now[j] - earlier[j]; }
+      var startGPos = r.touchData.startGPosition;
+      var dx = e.touches[0].clientX - startGPos[0];
+      var dx2 = dx * dx;
+      var dy = e.touches[0].clientY - startGPos[1];
+      var dy2 = dy * dy;
+      var dist2 = dx2 + dy2;
+
+      isOverThresholdDrag = dist2 >= r.touchTapThreshold2;
+    }
 
     // context swipe cancelling
     if( capture && r.touchData.cxt ){
@@ -15385,6 +15400,8 @@ BRp.load = function() {
 
     if( e.touches.length === 0 ){
       r.touchData.dragDelta = [];
+      r.touchData.startPosition = null;
+      r.touchData.startGPosition = null;
     }
 
     if( updateStartStyle && start ){
@@ -16730,7 +16747,6 @@ var CRp = {};
 
 // Draw node
 CRp.drawNode = function(context, node, drawOverlayInstead) {
-
   var r = this;
   var nodeWidth, nodeHeight;
   var style = node._private.style;
@@ -16743,6 +16759,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
   }
 
   var usePaths = this.usePaths();
+
   var canvasContext = context;
   var path;
   var pathCacheHit = false;
@@ -16794,6 +16811,10 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var bgColor = style['background-color'].value;
     var borderColor = style['border-color'].value;
     var borderStyle = style['border-style'].value;
+    var borderHovered = (style['border-hovered']) ? style['border-hovered'].value : 'no';
+
+    var initialDrawingPoint = 1.5;
+    var fullCircleLength = 2;
 
     this.fillStyle(context, bgColor[0], bgColor[1], bgColor[2], style['background-opacity'].value * parentOpacity);
 
@@ -16865,7 +16886,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
     context = canvasContext;
 
-    if( usePaths ){
+    if( usePaths ) {
       context.fill( path );
     } else {
       context.fill();
@@ -16917,23 +16938,27 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
         context.fill();
       }
     }
-
     // Border width, draw border
     if (borderWidth > 0) {
-
-      if( usePaths ){
+      if (borderStyle === 'progress') {
+        drawProgress(false);
+      }
+      else if( usePaths ) {
         context.stroke( path );
+        if (borderHovered === 'yes') {
+          drawProgress(true);
+        }
       } else {
         context.stroke();
       }
 
-      if( borderStyle === 'double' ){
+      if ( borderStyle === 'double' ) {
         context.lineWidth = style['border-width'].pfValue/3;
 
         var gco = context.globalCompositeOperation;
         context.globalCompositeOperation = 'destination-out';
 
-        if( usePaths ){
+        if ( usePaths ) {
           context.stroke( path );
         } else {
           context.stroke();
@@ -16941,7 +16966,6 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
         context.globalCompositeOperation = gco;
       }
-
     }
 
     if( usePaths ){
@@ -16971,6 +16995,26 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     }
   }
 
+  function drawProgress(isHover) {
+    var radius = (isHover) ? 2.62 : 2;
+
+    var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
+    var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
+
+    context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
+
+    var hoveredPath = new Path2D();
+    hoveredPath.arc(0,0,nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
+    context.strokeStyle = 'red';
+    context.stroke(hoveredPath);
+
+    if (borderProgress < 1) {
+      var hoveredPath2 = new Path2D();
+      hoveredPath2.arc(0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI);
+      context.strokeStyle = 'white';
+      context.stroke(hoveredPath2);
+    }
+  }
 };
 
 // does the node have at least one pie piece?
@@ -18853,7 +18897,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = '2.6.8';
+cytoscape.version = 'snapshot-c8dd3950b0-1462891958233';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
@@ -22718,7 +22762,7 @@ var styfn = {};
     color: { color: true },
     bool: { enums: ['yes', 'no'] },
     lineStyle: { enums: ['solid', 'dotted', 'dashed'] },
-    borderStyle: { enums: ['solid', 'dotted', 'dashed', 'double'] },
+    borderStyle: { enums: ['solid', 'dotted', 'dashed', 'double', 'progress'] },
     curveStyle: { enums: ['bezier', 'unbundled-bezier', 'haystack', 'segments'] },
     fontFamily: { regex: '^([\\w- \\"]+(?:\\s*,\\s*[\\w- \\"]+)*)$' },
     fontVariant: { enums: ['small-caps', 'normal'] },
@@ -22854,6 +22898,10 @@ var styfn = {};
     { name: 'border-opacity', type: t.zeroOneNumber },
     { name: 'border-width', type: t.size },
     { name: 'border-style', type: t.borderStyle },
+    { name: 'border-progress', type: t.zeroOneNumber },
+    { name: 'border-progress-color', type: t.color },
+    { name: 'border-progress-background', type: t.color },
+    { name: 'border-hovered', type: t.bool },
 
     // node background images
     { name: 'background-image', type: t.url },
