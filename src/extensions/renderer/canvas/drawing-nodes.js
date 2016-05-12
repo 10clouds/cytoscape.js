@@ -259,19 +259,26 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var radius = (isHover) ? 2.62 : 2;
 
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
+    var borderProgressColor = (style['border-progress-color']) ? style['border-progress-color'].value;
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
     var hoveredPath = new Path2D();
     hoveredPath.arc(0,0,nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
-    context.strokeStyle = 'red';
+    context.strokeStyle = 'rgba(' + borderProgressColor[0] + ','
+                                  + borderProgressColor[1] + ','
+                                  + borderProgressColor[2] + ','
+                                  + (node.style().opacity) + ')';
     context.stroke(hoveredPath);
 
     if (borderProgress < 1) {
       var hoveredPath2 = new Path2D();
       hoveredPath2.arc(0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI);
-      context.strokeStyle = 'white';
+      context.strokeStyle = 'rgba(' + 255 + ','
+                                    + 255 + ','
+                                    + 255 + ','
+                                    + node.style().opacity + ')';
       context.stroke(hoveredPath2);
     }
   }
