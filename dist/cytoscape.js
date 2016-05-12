@@ -17067,19 +17067,26 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var radius = (isHover) ? 2.62 : 2;
 
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
+    var borderProgressColor = (style['border-progress-color']) ? style['border-progress-color'].value : [255,255,255];
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
     var hoveredPath = new Path2D();
-    hoveredPath.arc(0,0,nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
-    context.strokeStyle = 'red';
+    hoveredPath.arc(0, 0, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
+    context.strokeStyle = 'rgba(' + borderProgressColor[0] + ','
+                                  + borderProgressColor[1] + ','
+                                  + borderProgressColor[2] + ','
+                                  + (node.style().opacity) + ')';
     context.stroke(hoveredPath);
 
     if (borderProgress < 1) {
       var hoveredPath2 = new Path2D();
       hoveredPath2.arc(0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI);
-      context.strokeStyle = 'white';
+      context.strokeStyle = 'rgba(' + 255 + ','
+                                    + 255 + ','
+                                    + 255 + ','
+                                    + node.style().opacity + ')';
       context.stroke(hoveredPath2);
     }
   }
@@ -18984,7 +18991,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-1066afbff6-1462892878602';
+cytoscape.version = 'snapshot-8a39f7f5d5-1463055807081';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
