@@ -259,13 +259,13 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var radius = (isHover) ? 2.62 : 2;
 
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
-    var borderProgressColor = (style['border-progress-color']) ? style['border-progress-color'].value;
+    var borderProgressColor = (style['border-progress-color']) ? style['border-progress-color'].value : [255,255,255];
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
     var hoveredPath = new Path2D();
-    hoveredPath.arc(0,0,nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
+    hoveredPath.arc(0, 0, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
     context.strokeStyle = 'rgba(' + borderProgressColor[0] + ','
                                   + borderProgressColor[1] + ','
                                   + borderProgressColor[2] + ','
