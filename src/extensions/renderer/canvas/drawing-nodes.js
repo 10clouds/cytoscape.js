@@ -259,7 +259,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var radius = (isHover) ? 2.62 : 2;
 
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
-    var borderProgressColor = (style['border-progress-color']) ? style['border-progress-color'].value : [255,255,255];
+    var borderProgressColor = (style['border-progress-color'])
+      ? style['border-progress-color'].value
+      : [255,255,255];
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
