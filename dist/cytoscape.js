@@ -16879,6 +16879,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     var borderColor = style['border-color'].value;
     var borderStyle = style['border-style'].value;
     var borderHovered = (style['border-hovered']) ? style['border-hovered'].value : 'no';
+
     var initialDrawingPoint = 1.5;
     var fullCircleLength = 2;
 
@@ -17017,6 +17018,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
         }
       } else {
         context.stroke();
+        if (borderHovered === 'yes') {
+          drawProgress(true);
+        }
       }
 
       if( borderStyle === 'double' ){
@@ -17065,30 +17069,69 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
   function drawProgress(isHover) {
     var radius = (isHover) ? 2.62 : 2;
-
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
-    var borderProgressColor = (style['border-progress-color']) ? style['border-progress-color'].value : [255,255,255];
+
+    var borderProgressColor = (style['border-progress-color'])
+      ? style['border-progress-color'].value
+      : [255,255,255];
+
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
+
+    var borderProgressColor = (style['border-progress-color'])
+      ? style['border-progress-color'].value
+      : [255,255,255];
+    var wrongHighlighColor = 'rgba(' + borderProgressColor[0] + ','
+                                     + borderProgressColor[1] + ','
+                                     + borderProgressColor[2] + ','
+                                     + (node.style().opacity) + ')';
+
+    var otherHighlighColor = 'rgba(' + 255 + ','
+                                     + 255 + ','
+                                     + 255 + ','
+                                     + node.style().opacity + ')';
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
-    var hoveredPath = new Path2D();
-    hoveredPath.arc(0, 0, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
-    context.strokeStyle = 'rgba(' + borderProgressColor[0] + ','
-                                  + borderProgressColor[1] + ','
-                                  + borderProgressColor[2] + ','
-                                  + (node.style().opacity) + ')';
-    context.stroke(hoveredPath);
+    if (!checkForOldInternetExplorer()) {
+      var hoveredPath = new Path2D();
+      hoveredPath.arc
+      (
+        0, 0, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI
+      );
+      context.strokeStyle = wrongHighlighColor;
+      context.stroke(hoveredPath);
 
-    if (borderProgress < 1) {
-      var hoveredPath2 = new Path2D();
-      hoveredPath2.arc(0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI);
-      context.strokeStyle = 'rgba(' + 255 + ','
-                                    + 255 + ','
-                                    + 255 + ','
-                                    + node.style().opacity + ')';
-      context.stroke(hoveredPath2);
+      if (borderProgress < 1) {
+        var hoveredPath2 = new Path2D();
+        hoveredPath2.arc
+        (
+          0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI
+        );
+        context.strokeStyle = otherHighlighColor;
+        context.stroke(hoveredPath2);
+      }
+    } else {
+      var nodeDiameter = 54;
+      var progressBarCoverage = (nodeDiameter * borderProgress) - (nodeDiameter / 2);
+
+      var gradient = context.createLinearGradient
+      (
+        node.data().x + progressBarCoverage, 0, node.data().x + 30, 0
+      );
+      gradient.addColorStop("0.001", otherHighlighColor); //direct transition required
+      gradient.addColorStop("0", wrongHighlighColor);    //no gradient
+
+      context.strokeStyle = gradient;
+      context.stroke();
     }
+  }
+
+  function checkForOldInternetExplorer() {
+    var isIE10 = false;
+    if (Function('/*@cc_on return /^10/.test(@_jscript_version) @*/')()) {
+        isIE10 = true;
+    }
+    return isIE10;
   }
 };
 
@@ -18991,7 +19034,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-8a39f7f5d5-1463055807081';
+cytoscape.version = 'snapshot-60a457a5f2-1464685238679';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
