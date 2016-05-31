@@ -257,32 +257,74 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
   function drawProgress(isHover) {
     var radius = (isHover) ? 2.62 : 2;
-
     var borderProgress = (style['border-progress']) ? style['border-progress'].value : 0;
+
     var borderProgressColor = (style['border-progress-color'])
       ? style['border-progress-color'].value
       : [255,255,255];
+
     var startDrawingPoint = initialDrawingPoint - (borderProgress * fullCircleLength);
+
+    var borderProgressColor = (style['border-progress-color'])
+      ? style['border-progress-color'].value
+      : [255,255,255];
+    var wrongHighlighColor = 'rgba(' + borderProgressColor[0] + ','
+                                     + borderProgressColor[1] + ','
+                                     + borderProgressColor[2] + ','
+                                     + (node.style().opacity) + ')';
+
+    var otherHighlighColor = 'rgba(' + 255 + ','
+                                     + 255 + ','
+                                     + 255 + ','
+                                     + node.style().opacity + ')';
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
-    var hoveredPath = new Path2D();
-    hoveredPath.arc(0, 0, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI);
-    context.strokeStyle = 'rgba(' + borderProgressColor[0] + ','
-                                  + borderProgressColor[1] + ','
-                                  + borderProgressColor[2] + ','
-                                  + (node.style().opacity) + ')';
-    context.stroke(hoveredPath);
+    if (!checkForOldInternetExplorer()) {
+      var hoveredPath = new Path2D();
+      hoveredPath.arc
+      (
+        0, 0, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI
+      );
+      context.strokeStyle = wrongHighlighColor;
+      context.stroke(hoveredPath);
 
-    if (borderProgress < 1) {
-      var hoveredPath2 = new Path2D();
-      hoveredPath2.arc(0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI);
-      context.strokeStyle = 'rgba(' + 255 + ','
-                                    + 255 + ','
-                                    + 255 + ','
-                                    + node.style().opacity + ')';
-      context.stroke(hoveredPath2);
+      if (borderProgress < 1) {
+        var hoveredPath2 = new Path2D();
+        hoveredPath2.arc
+        (
+          0, 0, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI
+        );
+        context.strokeStyle = otherHighlighColor;
+        context.stroke(hoveredPath2);
+      }
+    } else {
+      var position = node._private.position;
+
+      context.beginPath();
+      context.arc
+      (
+        position.x, position.y, nodeWidth / radius, startDrawingPoint * Math.PI, initialDrawingPoint * Math.PI
+      );
+      context.strokeStyle = wrongHighlighColor;
+      context.stroke();
+      context.closePath();
+      if (borderProgress < 1) {
+        context.beginPath();
+        context.arc(
+          position.x, position.y, nodeWidth / radius, initialDrawingPoint * Math.PI, startDrawingPoint * Math.PI
+        );
+        context.strokeStyle = otherHighlighColor;
+        context.stroke();
+        context.closePath();
+      }
+
     }
+
+  }
+
+  function checkForOldInternetExplorer() {
+    return !!Function('/*@cc_on return /^10/.test(@_jscript_version) @*/')();
   }
 };
 
