@@ -209,6 +209,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
         }
       } else {
         context.stroke();
+        if (borderHovered === 'yes') {
+          drawProgress(true);
+        }
       }
 
       if( borderStyle === 'double' ){

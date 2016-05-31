@@ -17017,6 +17017,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
         }
       } else {
         context.stroke();
+        if (borderHovered === 'yes') {
+          drawProgress(true);
+        }
       }
 
       if( borderStyle === 'double' ){
@@ -19035,7 +19038,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-4ec2118ea4-1464700782080';
+cytoscape.version = 'snapshot-3385e9d434-1464705747025';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
