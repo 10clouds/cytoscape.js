@@ -17091,7 +17091,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
-    if (!checkForOldInternetExplorer()) {
+    var  isIE11 = /Trident.*rv[ :]*11\./.test(navigator.userAgent);
+console.log('isIE11:', isIE11)
+    if (!checkForOldInternetExplorer() && !isIE11) {
       var hoveredPath = new Path2D();
       hoveredPath.arc
       (
@@ -17110,6 +17112,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
         context.stroke(hoveredPath2);
       }
     } else {
+      console.log('Old IE version')
       var position = node._private.position;
 
       context.beginPath();
@@ -19038,7 +19041,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-3385e9d434-1464705747025';
+cytoscape.version = 'snapshot-3366d9cca8-1494420098757';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
@@ -24789,6 +24792,5 @@ module.exports = ( typeof window === 'undefined' ? null : window );
 
 },{}]},{},[76])(76)
 });
-
 
 //# sourceMappingURL=cytoscape.js.map

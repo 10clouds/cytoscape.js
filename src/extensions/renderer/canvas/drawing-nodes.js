@@ -283,7 +283,9 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
 
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
-    if (!checkForOldInternetExplorer()) {
+    var  isIE11 = /Trident.*rv[ :]*11\./.test(navigator.userAgent);
+console.log('isIE11:', isIE11)
+    if (!checkForOldInternetExplorer() && !isIE11) {
       var hoveredPath = new Path2D();
       hoveredPath.arc
       (
@@ -302,6 +304,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
         context.stroke(hoveredPath2);
       }
     } else {
+      console.log('Old IE version')
       var position = node._private.position;
 
       context.beginPath();
