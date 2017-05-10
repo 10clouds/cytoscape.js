@@ -17092,7 +17092,7 @@ CRp.drawNode = function(context, node, drawOverlayInstead) {
     context.lineWidth = (isHover) ? (borderWidth + 6) : borderWidth;
 
     var  isIE11 = /Trident.*rv[ :]*11\./.test(navigator.userAgent);
-console.log('isIE11:', isIE11)
+
     if (!checkForOldInternetExplorer() && !isIE11) {
       var hoveredPath = new Path2D();
       hoveredPath.arc
@@ -17112,7 +17112,7 @@ console.log('isIE11:', isIE11)
         context.stroke(hoveredPath2);
       }
     } else {
-      console.log('Old IE version')
+
       var position = node._private.position;
 
       context.beginPath();
@@ -19041,7 +19041,7 @@ var cytoscape = function( options ){ // jshint ignore:line
 };
 
 // replaced by build system
-cytoscape.version = 'snapshot-3366d9cca8-1494420098757';
+cytoscape.version = 'snapshot-c3e19a259f-1494421079108';
 
 // try to register w/ jquery
 if( window && window.jQuery ){
